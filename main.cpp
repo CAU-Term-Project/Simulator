@@ -5,20 +5,18 @@
 unsigned int PC, IR;
 union instructionRegister inst;
 
-extern int ALU(int X, int Y, int C, int* Z);
 extern int MEM(unsigned int A, int V, int nRW, int S);
+extern unsigned int REG(unsigned int A, unsigned int V, unsigned int nRW);
 extern void resetMem(void);
 extern unsigned int invertEndian(unsigned int data);
 extern void instructionDecode(void);
 
 void showRegister(void) {
-    //int i;
-    //cout << "[REGISTER]" << endl;
-    //for (i = 0; i < REG_SIZE; i++) {
-    //    cout << "R" << i << "=";
-    //    cout << R[i] << endl;
-    //}
-    //cout << "PC" << PC << endl;
+    printf("PC: 0x%.8x\n", PC);
+    printf("HI: 0x%.8x, LO: 0x%.8x\n", HI, LO);
+    for (int i = 0; i < REG_SIZE; i++) {
+        printf("R[%d]: 0x%.8x\n", i, REG(i, 0, 0));
+    }
 }
 
 void setPC(unsigned int val) {
@@ -94,7 +92,7 @@ void main()
 
             break;
         case 'g':
-            while (IR != SYSCALL) step();
+            while (inst.RI.opc != SYSCALL) step();
             break;
         case 's':
             step();
@@ -102,6 +100,7 @@ void main()
         case 'm':
             break;
         case'r':
+            showRegister();
             break;
         case'x':
             return;

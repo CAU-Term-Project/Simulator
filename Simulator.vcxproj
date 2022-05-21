@@ -143,6 +143,7 @@
     <ClCompile Include="decoding.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MEM.cpp" />
+    <ClCompile Include="register.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
