@@ -139,7 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Simulator.cpp" />
+    <ClCompile Include="ALU.cpp" />
+    <ClCompile Include="decoding.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MEM.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="defines.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
