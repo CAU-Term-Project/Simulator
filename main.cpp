@@ -11,6 +11,16 @@ extern void resetMem(void);
 extern unsigned int invertEndian(unsigned int data);
 extern void instructionDecode(void);
 
+unsigned char progMEM[M_SIZE];
+unsigned char dataMEM[M_SIZE];
+unsigned char stakMEM[M_SIZE];
+
+unsigned int data;
+unsigned int addr;
+
+unsigned int iCount;	// # of instructions
+unsigned int dCount;	// # of data
+
 void showRegister(void) {
     printf("PC: 0x%.8x\n", PC);
     printf("HI: 0x%.8x, LO: 0x%.8x\n", HI, LO);
