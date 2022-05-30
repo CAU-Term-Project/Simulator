@@ -11,6 +11,120 @@ extern unsigned int PC, IR;
 int S;
 int* Z;
 
+void executeShift(unsigned int op, unsigned int rd, unsigned int rt, unsigned int sht)
+{
+	printf("%s  $%d, $%d, %d\n", instName[op], rd, rt, sht);
+
+	if (op == SLL) S = 1;
+	else if (op == SRL) S = 2;
+	else if (op == SRA) S = 3;
+	int ret = ALU(sht, REG(rt, 0, 0), S, Z);
+	REG(rd, ret, 1);
+}
+
+void executeJr(unsigned int op, unsigned int rs)
+{
+	printf("%s  $%d\n", instName[op], rs);
+	setPC(REG(rs, 0, 0));
+}
+
+void executeSyscall(unsigned int op)
+{
+	printf("%s\n", instName[op]);
+	IR = SYSCALL;
+}
+
+void executeMfHiLo(unsigned int op, unsigned int rd)
+{
+	printf("%s $%d\n", instName[op], rd);
+	if (op == MFHI) REG(rd, HI, 1);
+	else if (op == MFLO) REG(rd, LO, 1);
+}
+
+void executeMul(unsigned int op, unsigned int rs, unsigned int rt)
+{
+	printf("%s  $%d, $%d\n", instName[op], rs, rt);
+	long long result = REG(rs, 0, 0) * REG(rt, 0, 0);
+	HI = result >> 32;
+	LO = result & 0xFFFFFFFF;
+}
+
+void executeALU(unsigned int op, unsigned int rd, unsigned int rs, unsigned int rt)
+{
+	printf("%s  $%d, $%d, $%d\n", instName[op], rd, rs, rt);
+
+	if (op == ADD) S = 8;
+	else if (op == SUB) S = 9;
+	else if (op == AND) S = 12;
+	else if (op == OR) S = 13;
+	else if (op == XOR) S = 14;
+	else if (op == NOR) S = 15;
+	else if (op == SLT) S = 5;
+
+	int ret = ALU(REG(rs, 0, 0), REG(rt, 0, 0), S, Z);
+	REG(rd, ret, 1);
+}
+
+void executeALUI(unsigned int op, unsigned int rt, unsigned int rs, unsigned int immediate)
+{
+	printf("%s  $%d, $%d, %d\n", instName[op], rt, rs, immediate);
+	int ret;
+	if (op == LUI) {
+		ret = (immediate << 16);
+	}
+	else {
+		if (op == ADDI) S = 8;
+		else if (op == SLTI) S = 5;
+		else if (op == ANDI) S = 12;
+		else if (op == ORI) S = 13;
+		else if (op == XORI) S = 14;
+
+		ret = ALU(R[rs], immediate, S, Z);
+	}
+	REG(rt, ret, 1);
+}
+
+void executeBranch(unsigned int op, unsigned int rs, unsigned int rt, int offset)
+{
+	if (op == BLTZ) {
+		printf("%s  $%d, %d\n", instName[op], rs, offset << 2); // print shifted offset
+		int ret = ALU(REG(rs, 0, 0), 0, 9, Z);
+		if (ret == 1) setPC(PC + (offset << 2));
+	}
+	else {
+		printf("%s  $%d, $%d, %d\n", instName[op], rs, rt, offset << 2); // print shifted offset
+
+		ALU(REG(rs, 0, 0), REG(rt, 0, 0), 9, Z);
+		if (op == BEQ) {
+			if (*Z == 1) setPC(PC + (offset << 2));
+		}
+		else if (op == BNE) {
+			if (*Z == 0) setPC(PC + (offset << 2));
+		}
+	}
+}
+
+void executeJump(unsigned int op, unsigned int offset)
+{
+	printf("%s 0x%08X\n", instName[op], offset << 2);	// print shifted offset
+	if (op == J) setPC((PC & 0xC0000000) | (offset << 2));
+	else if (op == JAL) {
+		setPC((PC & 0xC0000000) | (offset << 2));
+		REG(REG_SIZE - 1, PC + 4, 1);
+	}
+
+}
+
+void executeLoadStore(unsigned int op, unsigned int rt, unsigned int rs, int offset)
+{
+	printf("%s  $%d, %d($%d)\n", instName[op], rt, offset, rs);
+	if (op == LB) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 0), 1);
+	else if (op == LW) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 2), 1);
+	else if (op == LBU) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 0), 1);
+	else if (op == SB) MEM(R[rs] + offset, REG(rt, 0, 0), 1, 0);
+	else if (op == SW) MEM(R[rs] + offset, REG(rt, 0, 0), 1, 2);
+}
+
 // R-type instructin decoding
 void decodeRtype(unsigned int fct)
 {
@@ -106,118 +220,4 @@ void instructionDecode(void)
 		else printf("Undefined instruction\n");
 	}
 	else printf("Undefined instruction\n");
-}
-
-void executeShift(unsigned int op, unsigned int rd, unsigned int rt, unsigned int sht)
-{
-	printf("%s  $%d, $%d, %d\n", instName[op], rd, rt, sht);
-	
-	if (op == SLL) S = 1;
-	else if (op == SRL) S = 2;
-	else if (op == SRA) S = 3;
-	int ret = ALU(sht, REG(rt, 0, 0), S, Z);
-	REG(rd, ret, 1);
-}
-
-void executeJr(unsigned int op, unsigned int rs)
-{
-	printf("%s  $%d\n", instName[op], rs);
-	setPC(REG(rs, 0, 0));
-}
-
-void executeSyscall(unsigned int op)
-{
-	printf("%s\n", instName[op]);
-	IR = SYSCALL;
-}
-
-void executeMfHiLo(unsigned int op, unsigned int rd)
-{
-	printf("%s $%d\n", instName[op], rd);
-	if (op == MFHI) REG(rd, HI, 1);
-	else if (op == MFLO) REG(rd, LO, 1);
-}
-
-void executeMul(unsigned int op, unsigned int rs, unsigned int rt)
-{
-	printf("%s  $%d, $%d\n", instName[op], rs, rt);
-	long long result = REG(rs, 0, 0) * REG(rt, 0, 0);
-	HI = result >> 32;
-	LO = result & 0xFFFFFFFF;
-}
-
-void executeALU(unsigned int op, unsigned int rd, unsigned int rs, unsigned int rt)
-{
-	printf("%s  $%d, $%d, $%d\n", instName[op], rd, rs, rt);
-
-	if (op == ADD) S = 8;
-	else if (op == SUB) S = 9;
-	else if (op == AND) S = 12;
-	else if (op == OR) S = 13;
-	else if (op == XOR) S = 14;
-	else if (op == NOR) S = 15;
-	else if (op == SLT) S = 5;
-
-	int ret = ALU(REG(rs, 0, 0), REG(rt, 0, 0), S, Z);
-	REG(rd, ret, 1);
-}
-
-void executeALUI(unsigned int op, unsigned int rt, unsigned int rs, unsigned int immediate)
-{
-	printf("%s  $%d, $%d, %d\n", instName[op], rt, rs, immediate);
-	int ret;
-	if (op == LUI) {
-		ret = (immediate << 16);
-	}
-	else {
-		if (op == ADDI) S = 8;
-		else if (op == SLTI) S = 5;
-		else if (op == ANDI) S = 12;
-		else if (op == ORI) S = 13;
-		else if (op == XORI) S = 14;
-
-		ret = ALU(R[rs], immediate, S, Z);
-	}
-	REG(rt, ret, 1);
-}
-
-void executeBranch(unsigned int op, unsigned int rs, unsigned int rt, int offset)
-{
-	if (op == BLTZ) {
-		printf("%s  $%d, %d\n", instName[op], rs, offset << 2); // print shifted offset
-		int ret = ALU(REG(rs, 0, 0), 0, 9, Z);
-		if (ret == 1) setPC(PC + (offset << 2));
-	}
-	else {
-		printf("%s  $%d, $%d, %d\n", instName[op], rs, rt, offset << 2); // print shifted offset
-
-		ALU(REG(rs, 0, 0), REG(rt, 0, 0), 9, Z);
-		if (op == BEQ) {
-			if(*Z == 1) setPC(PC + (offset << 2));
-		}
-		else if (op == BNE) {
-			if (*Z == 0) setPC(PC + (offset << 2));
-		}
-	}
-}
-
-void executeJump(unsigned int op, unsigned int offset)
-{
-	printf("%s 0x%08X\n", instName[op], offset << 2);	// print shifted offset
-	if (op == J) setPC((PC & 0xC0000000) | (offset << 2));
-	else if (op == JAL) {
-		setPC((PC & 0xC0000000) | (offset << 2));
-		REG(REG_SIZE - 1, PC + 4, 1);
-	}
-
-}
-
-void executeLoadStore(unsigned int op, unsigned int rt, unsigned int rs, int offset)
-{
-	printf("%s  $%d, %d($%d)\n", instName[op], rt, offset, rs);
-	if (op == LB) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 0), 1);
-	else if (op == LW) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 2), 1);
-	else if (op == LBU) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 0), 1);
-	else if (op == SB) MEM(R[rs] + offset, REG(rt, 0, 0), 1, 0);
-	else if (op == SW) MEM(R[rs] + offset, REG(rt, 0, 0), 1, 2);
 }

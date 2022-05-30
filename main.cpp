@@ -105,7 +105,7 @@ void main()
             printf("End: ");
             scanf("%d", &end);
 
-            for (int addr = start; addr <= end; addr += 4) {
+            for (unsigned int addr = start; addr <= end; addr += 4) {
                 printf("MEM[%d]: 0x%.8x\n", addr, MEM(addr, 0, 0, 2));
             }
             break;
