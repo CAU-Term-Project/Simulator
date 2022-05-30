@@ -6,9 +6,9 @@ int MEM(unsigned int A, int V, int nRW, int S) {
 
 	unsigned int memSelect, offset; // A = memSelect << 20 + offset
 	unsigned char* pM;
-	//	unsigned char cdata;
-	//	unsigned short int sdata;
-	//	unsigned int idata;
+	unsigned char cdata;
+	unsigned short int sdata;
+	unsigned int idata;
 
 	if (nRW > 1 || S > 2) {
 		printf("Error: Invalid range of nRW or S"); fflush(stdout);

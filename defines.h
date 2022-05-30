@@ -74,7 +74,9 @@ union instructionRegister {
 #define STAK_END	0x80000000
 
 #define M_SIZE 0x100000
-extern unsigned char progMEM[M_SIZE], dataMEM[M_SIZE], stakMEM[M_SIZE];
+extern unsigned char progMEM[M_SIZE];
+extern unsigned char dataMEM[M_SIZE];
+extern unsigned char stakMEM[M_SIZE];
 
 extern unsigned int data;
 extern unsigned int addr;
@@ -83,12 +85,9 @@ extern unsigned int iCount;	// # of instructions
 extern unsigned int dCount;	// # of data
 
 #define REG_SIZE 32
-extern int R[REG_SIZE] = {0};
+extern int R[REG_SIZE];
 
-extern const char* instName[] = { "nop", "sll", "srl", "sra", "slt", "mfhi", "mflo", "mul",
-					"add", "sub", "jr", "syscall", "and", "or", "xor", "nor",
-					"lb", "sb", "lw", "sw", "slti", "bltz", "j", "jal",
-					"addi", "lbu", "beq", "bne", "andi", "ori", "xori", "lui" };
+extern const char* instName[];
 
-extern int HI = 0;
-extern int LO = 0;
+extern int HI;
+extern int LO;

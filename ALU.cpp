@@ -1,5 +1,13 @@
-#include "stdio.h"
-//#include "defines.h"
+#include <stdio.h>
+#include "defines.h"
+
+int R[REG_SIZE] = { 0 };
+const char* instName[] = { "nop", "sll", "srl", "sra", "slt", "mfhi", "mflo", "mul",
+					"add", "sub", "jr", "syscall", "and", "or", "xor", "nor",
+					"lb", "sb", "lw", "sw", "slti", "bltz", "j", "jal",
+					"addi", "lbu", "beq", "bne", "andi", "ori", "xori", "lui" };
+int LO = 0;
+int HI = 0;
 
 // Arithmetic unit
 int addSubtract(int X, int Y, int C) {

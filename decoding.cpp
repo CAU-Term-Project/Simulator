@@ -11,6 +11,7 @@ extern unsigned int PC, IR;
 int S;
 int* Z;
 
+
 void executeShift(unsigned int op, unsigned int rd, unsigned int rt, unsigned int sht)
 {
 	printf("%s  $%d, $%d, %d\n", instName[op], rd, rt, sht);
