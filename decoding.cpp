@@ -9,7 +9,8 @@ extern int MEM(unsigned int A, int V, int nRW, int S);
 extern unsigned int REG(unsigned int A, unsigned int V, unsigned int nRW);
 extern unsigned int PC, IR;
 int S;
-int* Z;
+int zero;
+int* Z = &zero;
 
 
 void executeShift(unsigned int op, unsigned int rd, unsigned int rt, unsigned int sht)
@@ -33,6 +34,7 @@ void executeSyscall(unsigned int op)
 {
 	printf("%s\n", instName[op]);
 	IR = SYSCALL;
+	PC -= 4;
 }
 
 void executeMfHiLo(unsigned int op, unsigned int rd)
@@ -66,7 +68,7 @@ void executeALU(unsigned int op, unsigned int rd, unsigned int rs, unsigned int 
 	REG(rd, ret, 1);
 }
 
-void executeALUI(unsigned int op, unsigned int rt, unsigned int rs, unsigned int immediate)
+void executeALUI(unsigned int op, unsigned int rt, unsigned int rs, short immediate)
 {
 	printf("%s  $%d, $%d, %d\n", instName[op], rt, rs, immediate);
 	int ret;
@@ -85,7 +87,7 @@ void executeALUI(unsigned int op, unsigned int rt, unsigned int rs, unsigned int
 	REG(rt, ret, 1);
 }
 
-void executeBranch(unsigned int op, unsigned int rs, unsigned int rt, int offset)
+void executeBranch(unsigned int op, unsigned int rs, unsigned int rt, short offset)
 {
 	if (op == BLTZ) {
 		printf("%s  $%d, %d\n", instName[op], rs, offset << 2); // print shifted offset
@@ -110,13 +112,13 @@ void executeJump(unsigned int op, unsigned int offset)
 	printf("%s 0x%08X\n", instName[op], offset << 2);	// print shifted offset
 	if (op == J) setPC((PC & 0xC0000000) | (offset << 2));
 	else if (op == JAL) {
+		REG(REG_SIZE - 1, PC, 1);
 		setPC((PC & 0xC0000000) | (offset << 2));
-		REG(REG_SIZE - 1, PC + 4, 1);
 	}
 
 }
 
-void executeLoadStore(unsigned int op, unsigned int rt, unsigned int rs, int offset)
+void executeLoadStore(unsigned int op, unsigned int rt, unsigned int rs, short offset)
 {
 	printf("%s  $%d, %d($%d)\n", instName[op], rt, offset, rs);
 	if (op == LB) REG(rt, MEM(REG(rs, 0, 0) + offset, 0, 0, 0), 1);

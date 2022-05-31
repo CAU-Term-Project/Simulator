@@ -8,6 +8,7 @@ union instructionRegister inst;
 
 extern int MEM(unsigned int A, int V, int nRW, int S);
 extern unsigned int REG(unsigned int A, unsigned int V, unsigned int nRW);
+extern void resetRegister();
 extern void resetMem(void);
 extern unsigned int invertEndian(unsigned int data);
 extern void instructionDecode(void);
@@ -23,10 +24,10 @@ unsigned int iCount;	// # of instructions
 unsigned int dCount;	// # of data
 
 void showRegister(void) {
-    printf("PC: 0x%.8x\n", PC);
-    printf("HI: 0x%.8x, LO: 0x%.8x\n", HI, LO);
+    printf("PC:\t0x%.8x\n", PC);
+    printf("HI:\t0x%.8x\nLO:\t0x%.8x\n", HI, LO);
     for (int i = 0; i < REG_SIZE; i++) {
-        printf("R[%d]: 0x%.8x\n", i, REG(i, 0, 0));
+        printf("R[%d]:\t0x%.8x\n", i, REG(i, 0, 0));
     }
 }
 
@@ -38,17 +39,26 @@ void setPC(unsigned int val) {
 void step() {
     inst.I = MEM(PC, 0, 0, 2);
     PC += 4;
-
     instructionDecode();
 }
 
 void main()
 {
-    FILE* fp;
-    
+    printf("\t<Command List>\n");
+    printf("=================================\n");
+    printf("| sr:\tset Register\t\t|\n");
+    printf("| sm:\tset Memory\t\t|\n");
+    printf("|  l:\tload to Memory\t\t|\n");
+    printf("|  j:\tjump to Address\t\t|\n");
+    printf("|  g:\trun to the end\t\t|\n");
+    printf("|  s:\trun one step\t\t|\n");
+    printf("|  m:\tshow Memory\t\t|\n");
+    printf("|  r:\tshow Register\t\t|\n");
+    printf("|  x:\texit\t\t\t|\n");
+    printf("=================================\n");
     while (1) {
         // Get command line
-        char command[2];
+        char command[10];
         printf("command: ");
         scanf("%s", command);
         getchar();
@@ -68,20 +78,38 @@ void main()
             scanf("%x", &location);
             printf("Value: ");
             scanf("%d", &value);
-            printf("MEM[%.8x] = %d\n", location, value);
+            printf("MEM[0x%.8x] = %d\n", location, value);
             MEM(location, value, 1, 2);
         }
-        else if (command[0] == 'l') {
+        else if (strcmp(command, "l") == 0) {
             resetMem();
-
-            char* fileName;
-            printf("Enter FileName: ");
-            scanf("%s", &fileName);
+            resetRegister();
+            char fileName[25];
+            int fileNumber;
+            FILE* fp;
+            printf("\t<File List>\n");
+            printf("=================================\n");
+            printf("| 1:\tas_ex01_arith.bin\t|\n");
+            printf("| 2:\tas_ex02_logic.bin\t|\n");
+            printf("| 3:\tas_ex03_ifelse.bin\t|\n");
+            printf("| 4:\tas_ex04_fct.bin\t\t|\n");
+            printf("=================================\n");
+            printf("Enter File Number: ");
+            scanf("%d", &fileNumber);
+            getchar();
+            if(fileNumber == 1) strcpy(fileName , ".\\as_ex01_arith.bin");
+            else if (fileNumber == 2) strcpy(fileName, ".\\as_ex02_logic.bin");
+            else if (fileNumber == 3) strcpy(fileName, ".\\as_ex03_ifelse.bin");
+            else if (fileNumber == 4) strcpy(fileName, ".\\as_ex04_fct.bin");
+            else {
+                printf("wrong File Number\n");
+                continue;
+            }
+            
             errno_t err;
-
             err = fopen_s(&fp, fileName, "rb");
-            if (err) {
-                printf("Cannot open file: %s\n", fileName);
+            if (err != 0) {
+                printf("Cannot open file: %s with errno %d\n", fileName, err);
                 return;
             }
 
@@ -91,6 +119,7 @@ void main()
             fread(&data, sizeof(data), 1, fp);
             dCount = invertEndian(data);
             printf("Number of Instructions: %d, Number of Data: %d\n", iCount, dCount);
+            REG(31, PC + 4 * (iCount - 1), 1);
 
             // Load to memory
             addr = 0;
@@ -112,26 +141,34 @@ void main()
 
             fclose(fp);
         }
-        else if (command[0] == 'j') {
+        else if (strcmp(command, "j") == 0) {
             unsigned int jaddr;
-            printf("Enter Jump Address: ");
-            scanf("%d", &jaddr);
+            printf("Enter Jump Address: 0x");
+            scanf("%x", &jaddr);
             setPC(jaddr);
         }
-        else if(command[0] == 'g') while (inst.RI.opc != SYSCALL) step();
-        else if(command[0] == 's') step();
-        else if (command[0] == 'm') {
+        else if (strcmp(command, "g") == 0) {
+            while (IR != SYSCALL) step();
+            IR = NULL;
+        }
+        else if (strcmp(command, "s") == 0) {
+            step();
+            IR = NULL;
+        }
+        else if (strcmp(command, "m") == 0) {
             unsigned int start, end;
-            printf("Start: ");
-            scanf("%d", &start);
-            printf("End: ");
-            scanf("%d", &end);
+            printf("Start: 0x");
+            scanf("%x", &start);
+            printf("End: 0x");
+            scanf("%x", &end);
 
-            for (unsigned int addr = start; addr <= end; addr += 4) {
-                printf("MEM[%d]: 0x%.8x\n", addr, MEM(addr, 0, 0, 2));
+            for (unsigned int addr = start; addr < end; addr += 4) {
+                printf("MEM[0x%x]: 0x%.8x\n", addr, MEM(addr, 0, 0, 2));
             }
         }
-        else if(command[0] =='r') showRegister();
-        else if(command[0] =='x') return;
+        else if (strcmp(command, "r") == 0) showRegister();
+        else if (strcmp(command, "x") == 0) break;
+        else printf("Wrong Command\n");
     }
+    return;
 }

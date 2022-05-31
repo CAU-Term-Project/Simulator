@@ -21,7 +21,7 @@ int MEM(unsigned int A, int V, int nRW, int S) {
 	else if (memSelect == 0x100) pM = dataMEM;  // data memory
 	else if (memSelect == 0x7FF) pM = stakMEM;  // stack
 	else {
-		printf("Error: No memory with address: %08x\n", A); fflush(stdout);
+		printf("Error: No memory with address: 0x%.8x\n", A); fflush(stdout);
 		exit(1);
 	}
 
