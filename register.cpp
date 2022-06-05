@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "defines.h"
-
+// debugging complete
 extern unsigned int PC, IR;
 
 unsigned int REG(unsigned int A, unsigned int V, unsigned int nRW) {
