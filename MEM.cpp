@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "defines.h"
-
+// debugging complete
 int MEM(unsigned int A, int V, int nRW, int S) {
 
 	unsigned int memSelect, offset; // A = memSelect << 20 + offset
