@@ -225,5 +225,3 @@ void instructionDecode(void)
 	}
 	else printf("Undefined instruction\n");
 }
-//수정
-// decoding.cpp 윤다영
