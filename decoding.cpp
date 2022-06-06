@@ -2,6 +2,7 @@
 #include "defines.h"
 #define _CRT_SECURE_NO_WARNINGS
 
+
 extern union instructionRegister inst;
 extern int ALU(int X, int Y, int C, int* Z);
 extern void setPC(unsigned int val);
@@ -224,3 +225,5 @@ void instructionDecode(void)
 	}
 	else printf("Undefined instruction\n");
 }
+//¼öÁ¤
+// decoding.cpp À±´Ù¿µ
